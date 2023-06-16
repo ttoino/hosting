@@ -1,0 +1,6 @@
+registry
+mongo
+postgres
+*.env*
+*.pem
+*.key

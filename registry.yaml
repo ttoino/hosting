@@ -1,0 +1,17 @@
+version: '0.1'
+storage:
+  filesystem:
+  cache:
+    blobdescriptor: inmemory
+
+http:
+  addr: :5000
+
+notifications:
+  endpoints:
+    - name: test
+      headers:
+      url: http://registry-listener:7000
+      timeout: 500ms
+      threshold: 5
+      backoff: 1s
