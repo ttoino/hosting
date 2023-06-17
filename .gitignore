@@ -4,3 +4,5 @@ postgres
 *.env*
 *.pem
 *.key
+*.crt
+*.htpasswd
