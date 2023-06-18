@@ -28,6 +28,12 @@ services:
       - ./cert.key:/etc/nginx/cert.key:ro
       - ./auth.htpasswd:/etc/nginx/auth.htpasswd:ro
       - xaufome:/var/www/xaufome:ro
+    depends_on:
+      # - website
+      - xaufome
+      - atrellado
+      - commits
+      - registry
 
   # Subdomains
 
