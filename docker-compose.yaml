@@ -20,13 +20,13 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./cert.crt:/etc/nginx/cert.crt
-      - ./cert.key:/etc/nginx/cert.key
-      - ./auth.htpasswd:/etc/nginx/auth.htpasswd
-      - xaufome:/var/www/xaufome
+      - ./cert.crt:/etc/nginx/cert.crt:ro
+      - ./cert.key:/etc/nginx/cert.key:ro
+      - ./auth.htpasswd:/etc/nginx/auth.htpasswd:ro
+      - xaufome:/var/www/xaufome:ro
 
   # Subdomains
 

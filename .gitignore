@@ -5,4 +5,7 @@ postgres
 *.pem
 *.key
 *.crt
+*.csr
+*.ext
+*.srl
 *.htpasswd
