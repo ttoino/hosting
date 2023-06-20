@@ -11,9 +11,16 @@
   execute-command: /webhook.sh
   trigger-rule:
     and:
-    - match:
-        type: ip-whitelist
-        ip-range: 192.168.0.1/16
+    - or:
+      - match:
+          type: ip-whitelist
+          ip-range: 192.168.0.1/16
+      - match:
+          type: ip-whitelist
+          ip-range: 172.16.0.0/12
+      - match:
+          type: ip-whitelist
+          ip-range: 10.0.0.0/8
     - match:
         type: value
         value: push
