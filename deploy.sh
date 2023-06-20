@@ -8,6 +8,7 @@ function refresh {
 
 mkfifo ./webhook.fifo
 
+eval "$(ssh-agent -s)"
 ssh-add
 refresh
 
