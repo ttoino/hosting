@@ -12,6 +12,7 @@ services:
   
   webhook:
     image: thecatlady/webhook
+    command: -verbose -hooks /config/hooks.yml -hotreload -template
     env_file:
       - ./webhook.env
     expose:
