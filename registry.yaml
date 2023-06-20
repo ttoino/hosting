@@ -9,9 +9,9 @@ http:
 
 notifications:
   endpoints:
-    - name: test
+    - name: webhook
       headers:
-      url: http://registry-listener:7000
+      url: http://webhook:9000/hooks/registry
       timeout: 500ms
       threshold: 5
       backoff: 1s

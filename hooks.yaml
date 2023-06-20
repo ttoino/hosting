@@ -1,7 +1,22 @@
-- id: webhook
-  execute-command: "/webhook.sh"
-  # trigger-rule:
-  #   or:
-  #   - match: 
-  #       type: ip-whitelist
-  #       ip-range: 192.168.0.0/16
+- id: github
+  execute-command: /webhook.sh
+  trigger-rule:
+    match:
+      type: payload-hmac-sha256
+      secret: "{{ getenv GH_SECRET | js }}"
+      parameter:
+        source: header
+        name: X-Hub-Signature-256
+- id: registry
+  execute-command: /webhook.sh
+  trigger-rule:
+    and:
+    - match:
+        type: ip-whitelist
+        ip-range: 192.168.0.1/16
+    - match:
+        type: value
+        value: push
+        parameter:
+          source: payload
+          name: events.0.action

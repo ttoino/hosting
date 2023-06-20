@@ -7,10 +7,14 @@ services:
     volumes:
       - ./data/registry:/var/lib/registry
       - ./registry.yaml:/etc/docker/registry/config.yml:ro
+    depends_on:
+      - webhook
   
   webhook:
     image: thecatlady/webhook
-    ports:
+    env_file:
+      - ./webhook.env
+    expose:
       - "9000:9000"
     volumes:
       - ./hooks.yaml:/config/hooks.yml:ro
@@ -34,13 +38,14 @@ services:
       - atrellado
       - commits
       - registry
+      - webhook
 
   # Subdomains
 
-  website:
-    image: localhost:5000/website:latest
-    expose:
-      - "80:80"
+  # website:
+  #   image: localhost:5000/website:latest
+  #   expose:
+  #     - "80:80"
 
   xaufome:
     image: localhost:5000/xaufome:latest
