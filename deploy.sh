@@ -3,6 +3,7 @@
 function refresh {
     git pull
     docker compose down
+    docker compose up -d --build registry
     docker compose pull
     docker compose up -d --build
 }
