@@ -9,3 +9,5 @@ postgres
 *.ext
 *.srl
 *.htpasswd
+*.log
+*.pid
