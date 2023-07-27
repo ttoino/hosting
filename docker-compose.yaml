@@ -48,8 +48,6 @@ services:
     image: localhost:5000/website:latest
     volumes:
       - website:/app:rw
-    expose:
-      - "80:80"
 
   xaufome:
     image: localhost:5000/xaufome:latest

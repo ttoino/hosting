@@ -11,3 +11,4 @@ postgres
 *.htpasswd
 *.log
 *.pid
+*.db
