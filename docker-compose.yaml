@@ -9,10 +9,10 @@ services:
       - ./registry.yaml:/etc/docker/registry/config.yml:ro
     depends_on:
       - webhook
-  
+
   webhook:
     image: thecatlady/webhook
-    command: -verbose -hooks /config/hooks.yml -hotreload -template
+    command: -debug -verbose -hooks /config/hooks.yml -hotreload -template
     env_file:
       - ./webhook.env
     expose:
@@ -32,6 +32,7 @@ services:
       - ./cert.crt:/etc/nginx/cert.crt:ro
       - ./cert.key:/etc/nginx/cert.key:ro
       - ./auth.htpasswd:/etc/nginx/auth.htpasswd:ro
+      - website:/var/www/website:ro
       - xaufome:/var/www/xaufome:ro
     depends_on:
       # - website
@@ -43,10 +44,12 @@ services:
 
   # Subdomains
 
-  # website:
-  #   image: localhost:5000/website:latest
-  #   expose:
-  #     - "80:80"
+  website:
+    image: localhost:5000/website:latest
+    volumes:
+      - website:/app:rw
+    expose:
+      - "80:80"
 
   xaufome:
     image: localhost:5000/xaufome:latest
@@ -102,4 +105,5 @@ services:
       - "25:25"
 
 volumes:
+  website:
   xaufome:
