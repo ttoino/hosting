@@ -35,7 +35,7 @@ services:
       - website:/var/www/website:ro
       - xaufome:/var/www/xaufome:ro
     depends_on:
-      # - website
+      - website
       - xaufome
       - atrellado
       - commits
@@ -55,7 +55,7 @@ services:
     image: localhost:5000/xaufome:latest
     volumes:
       - xaufome:/var/www/html
-      # - ./data/xaufome.db:/var/www/html/database/main.db
+      - ./data/xaufome.db:/var/www/html/database/main.db
     expose:
       - "9000:9000"
 
