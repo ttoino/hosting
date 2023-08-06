@@ -27,9 +27,16 @@
         parameter:
           source: payload
           name: events.0.action
-    - match:
-        type: value
-        value: "application/vnd.docker.distribution.manifest.v2+json"
-        parameter:
-          source: payload
-          name: events.0.target.mediaType
+    - or:
+      - match:
+          type: value
+          value: "application/vnd.docker.distribution.manifest.v2+json"
+          parameter:
+            source: payload
+            name: events.0.target.mediaType
+      - match:
+          type: value
+          value: "application/vnd.oci.image.index.v1+json"
+          parameter:
+            source: payload
+            name: events.0.target.mediaType
