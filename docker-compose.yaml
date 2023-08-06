@@ -33,9 +33,11 @@ services:
       - ./cert.key:/etc/nginx/cert.key:ro
       - ./auth.htpasswd:/etc/nginx/auth.htpasswd:ro
       - website:/var/www/website:ro
+      - latex-previewer:/var/www/latex-previewer:ro
       - xaufome:/var/www/xaufome:ro
     depends_on:
       - website
+      - latex-previewer
       - xaufome
       - atrellado
       - commits
@@ -48,6 +50,11 @@ services:
     image: localhost:5000/website:latest
     volumes:
       - website:/app:rw
+
+  latex-previewer:
+    image: localhost:5000/latex-previewer:latest
+    volumes:
+      - latex-previewer:/app:rw
 
   xaufome:
     image: localhost:5000/xaufome:latest
@@ -104,4 +111,5 @@ services:
 
 volumes:
   website:
+  latex-previewer:
   xaufome:
