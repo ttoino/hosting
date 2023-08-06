@@ -10,8 +10,6 @@ function refresh {
 
 mkfifo ./webhook.fifo
 
-eval "$(ssh-agent -s)"
-ssh-add
 refresh
 
 while cat ./webhook.fifo > /dev/null; do
