@@ -14,7 +14,7 @@ services:
     image: thecatlady/webhook
     command: -debug -verbose -hooks /config/hooks.yml -hotreload -template
     env_file:
-      - ./webhook.env
+      - ./secrets/webhook.env
     expose:
       - "9000:9000"
     volumes:
@@ -29,9 +29,10 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./cert.crt:/etc/nginx/cert.crt:ro
-      - ./cert.key:/etc/nginx/cert.key:ro
-      - ./auth.htpasswd:/etc/nginx/auth.htpasswd:ro
+      - ./secrets/cert.crt:/etc/nginx/cert.crt:ro
+      - ./secrets/cert.key:/etc/nginx/cert.key:ro
+      - ./secrets/auth.htpasswd:/etc/nginx/auth.htpasswd:ro
+      - ./logs/nginx:/var/log/nginx
       - website:/var/www/website:ro
       - latex-previewer:/var/www/latex-previewer:ro
       - xaufome:/var/www/xaufome:ro
@@ -67,7 +68,7 @@ services:
   atrellado:
     image: localhost:5000/atrellado:latest
     env_file:
-      - ./atrellado.env
+      - ./secrets/atrellado.env
     expose:
       - "80:80"
     depends_on:
@@ -77,7 +78,7 @@ services:
   commits:
     image: localhost:5000/commits:latest
     env_file:
-      - ./commits.env
+      - ./secrets/commits.env
     expose:
       - "80:80"
     depends_on:
@@ -89,7 +90,7 @@ services:
     image: postgres:alpine
     restart: always
     env_file:
-      - ./postgres.env
+      - ./secrets/postgres.env
     expose:
       - "5432:5432"
     volumes:

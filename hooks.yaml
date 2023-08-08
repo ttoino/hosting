@@ -1,5 +1,8 @@
 - id: github
   execute-command: /webhook.sh
+  pass-arguments-to-command:
+  - source: string
+    name: git
   trigger-rule:
     match:
       type: payload-hmac-sha256
@@ -9,6 +12,11 @@
         name: X-Hub-Signature-256
 - id: registry
   execute-command: /webhook.sh
+  pass-arguments-to-command:
+  - source: string
+    name: docker
+  - source: payload
+    name: events.0.target.repository
   trigger-rule:
     and:
     - or:

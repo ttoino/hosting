@@ -1,2 +1,2 @@
 #!/bin/sh
-echo > /webhook.fifo
+echo "$@" > /webhook.fifo
