@@ -156,8 +156,8 @@ services:
       AUTHENTIK_HOST: https://authentik-server:9443
       AUTHENTIK_INSECURE: "true"
     expose:
-      - "389:389"
-      - "636:636"
+      - "3389:3389"
+      - "6636:6636"
   
   pgadmin:
     image: dpage/pgadmin4:latest
