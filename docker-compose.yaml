@@ -48,6 +48,7 @@ services:
       # Admin stuff
       - authentik-server
       - authentik-worker
+      - authentik-ldap
       - pgadmin
       # Media apps
       - jellyfin
@@ -146,6 +147,17 @@ services:
     depends_on:
       - postgres
       - redis
+
+  authentik-ldap:
+    image: ghcr.io/goauthentik/ldap:latest
+    env_file:
+      - ./secrets/authentik-ldap.env
+    environment:
+      AUTHENTIK_HOST: https://authentik-server:9443
+      AUTHENTIK_INSECURE: "true"
+    expose:
+      - "389:389"
+      - "636:636"
   
   pgadmin:
     image: dpage/pgadmin4:latest
