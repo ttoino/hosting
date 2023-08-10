@@ -37,13 +37,26 @@ services:
       - latex-previewer:/var/www/latex-previewer:ro
       - xaufome:/var/www/xaufome:ro
     depends_on:
+      - registry
+      - webhook
+      # Subdomains
       - website
       - latex-previewer
       - xaufome
       - atrellado
       - commits
-      - registry
-      - webhook
+      # Admin stuff
+      - authentik-server
+      - authentik-worker
+      - pgadmin
+      # Media apps
+      - jellyfin
+      - radarr
+      - sonarr
+      - bazarr
+      - readarr
+      - prowlarr
+      - qbittorrent
 
   # Subdomains
 
@@ -67,6 +80,16 @@ services:
 
   atrellado:
     image: localhost:5000/atrellado:latest
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: atrellado
+      DB_USERNAME: atrellado
+
+      MAIL_MAILER: smtp
+      MAIL_HOST: smtp
+      MAIL_PORT: 25
     env_file:
       - ./secrets/atrellado.env
     expose:
@@ -84,29 +107,159 @@ services:
     depends_on:
       - mongo
 
-  # Other services
+  # Admin stuff
 
-  postgres:
-    image: postgres:alpine
-    restart: always
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    command: server
     env_file:
-      - ./secrets/postgres.env
+      - ./secrets/authentik.env
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
     expose:
-      - "5432:5432"
+      - "9000:9000"
+      - "9443:9443"
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/authentik/media:/media
+      - ./data/authentik/templates:/templates
+    depends_on:
+      - postgres
+      - redis
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    command: worker
+    env_file:
+      - ./secrets/authentik.env
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+    volumes:
+      - ./data/authentik/media:/media
+      - ./data/authentik/templates:/templates
+      - ./data/authentik/certs:/certs
+    depends_on:
+      - postgres
+      - redis
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    env_file:
+      - ./secrets/pgadmin.env
+    environment:
+      PGADMIN_CONFIG_AUTHENTICATION_SOURCES: "['oauth2']"
+      PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USERS: "True"
+    expose:
+      - "80:80"
+    depends_on:
+      - postgres
+
+  # Media apps
+
+  jellyfin:
+    image: linuxserver/jellyfin:latest
+    restart: unless-stopped
+    expose:
+      - "8096:8096"
+    volumes:
+      - ./data/jellyfin:/config
+      - ./data/media/media:/data
+
+  radarr:
+    image: linuxserver/radarr:latest
+    restart: unless-stopped
+    expose:
+      - "7878:7878"
+    volumes:
+      - ./data/radarr:/config
+      - ./data/media:/data
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    restart: unless-stopped
+    expose:
+      - "8989:8989"
+    volumes:
+      - ./data/sonarr:/config
+      - ./data/media:/data
+
+  bazarr:
+    image: linuxserver/bazarr:latest
+    restart: unless-stopped
+    expose:
+      - "6767:6767"
+    volumes:
+      - ./data/bazarr:/config
+      - ./data/media:/data
+
+  readarr:
+    image: linuxserver/readarr:develop
+    restart: unless-stopped
+    expose:
+      - "8787:8787"
+    volumes:
+      - ./data/readarr:/config
+      - ./data/media:/data
+
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    restart: unless-stopped
+    expose:
+      - "9696:9696"
+    volumes:
+      - ./data/prowlarr:/config
+
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    restart: unless-stopped
+    environment:
+      - WEBUI_PORT=8080
+    expose:
+      - "8080:8080"
+    volumes:
+      - ./data/qbittorrent:/config/qBittorrent
+      - ./data/media/torrents:/data/torrents
+
+  # Other services
 
   mongo:
     image: mongo:latest
-    restart: always
+    restart: unless-stopped
     expose:
       - "27017:27017"
     volumes:
       - ./data/mongo:/data/db
 
+  postgres:
+    image: postgres:alpine
+    restart: unless-stopped
+    env_file:
+      - ./secrets/postgres.env
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=atrellado,authentik
+    expose:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh:ro
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    expose:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+
   smtp:
     image: namshi/smtp:latest
-    restart: always
+    restart: unless-stopped
     expose:
       - "25:25"
 
