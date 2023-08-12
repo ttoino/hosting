@@ -27,6 +27,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    expose:
+      - "8080:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./secrets/cert.crt:/etc/nginx/cert.crt:ro
@@ -50,6 +52,10 @@ services:
       - authentik-worker
       - authentik-ldap
       - pgadmin
+      - prometheus
+      - grafana
+      - cadvisor
+      - node-exporter
       # Media apps
       - jellyfin
       - radarr
@@ -122,6 +128,7 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: authentik
     expose:
       - "9000:9000"
+      - "9300:9300"
       - "9443:9443"
     volumes:
       - ./data/authentik/media:/media
@@ -158,6 +165,7 @@ services:
     expose:
       - "3389:3389"
       - "6636:6636"
+      - "9300:9300"
   
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -167,10 +175,78 @@ services:
     environment:
       PGADMIN_CONFIG_AUTHENTICATION_SOURCES: "['oauth2']"
       PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USERS: "True"
+      PGADMIN_CONFIG_OAUTH2_CONFIG: |
+        [{
+          'OAUTH2_NAME': 'authentik',
+          'OAUTH2_DISPLAY_NAME' : 'Authentik',
+          'OAUTH2_CLIENT_ID' : __import__('os').environ['AUTHENTIK_CLIENT_ID'],
+          'OAUTH2_CLIENT_SECRET' : __import__('os').environ['AUTHENTIK_CLIENT_SECRET'],
+          'OAUTH2_TOKEN_URL' : 'https://sso.toino.pt/application/o/token/',
+          'OAUTH2_AUTHORIZATION_URL' : 'https://sso.toino.pt/application/o/authorize/',
+          'OAUTH2_API_BASE_URL' : 'https://sso.toino.pt/',
+          'OAUTH2_USERINFO_ENDPOINT' : 'https://sso.toino.pt/application/o/userinfo/',
+          'OAUTH2_SERVER_METADATA_URL' : 'https://sso.toino.pt/application/o/pgadmin/.well-known/openid-configuration',
+          'OAUTH2_SCOPE' : 'openid email profile',
+          'OAUTH2_BUTTON_COLOR' : '#FD4B2D',
+          'OAUTH2_ICON' : 'fa fa-lock',
+        }]
     expose:
       - "80:80"
     depends_on:
       - postgres
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    expose:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./data/prometheus:/prometheus
+  
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    expose:
+      - "3000:3000"
+    environment:
+      GF_SERVER_DOMAIN: "grafana.toino.pt"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+      GF_AUTH_GENERIC_OAUTH_NAME: "Authentik"
+      GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email"
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: "https://sso.toino.pt/application/o/authorize/"
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: "https://sso.toino.pt/application/o/token/"
+      GF_AUTH_GENERIC_OAUTH_API_URL: "https://sso.toino.pt/application/o/userinfo/"
+      GF_AUTH_SIGNOUT_REDIRECT_URL: "https://sso.toino.pt/application/o/grafana/end-session/"
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(groups[*], 'Superusers') && ('Admin' || 'Editor') || 'Viewer'"
+      GF_AUTH_OAUTH_AUTO_LOGIN: "true"
+    env_file:
+      - ./secrets/grafana.env
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+  
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: unless-stopped
+    expose:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+  
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    pid: host
+    command:
+      - --path.rootfs=/host
+    expose:
+      - "9100:9100"
+    volumes:
+      - /:/host:ro,rslave
 
   # Media apps
 
