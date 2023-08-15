@@ -38,6 +38,7 @@ services:
       - website:/var/www/website:ro
       - latex-previewer:/var/www/latex-previewer:ro
       - xaufome:/var/www/xaufome:ro
+      - commits:/var/www/commits:ro
     depends_on:
       - registry
       - webhook
@@ -107,12 +108,8 @@ services:
 
   commits:
     image: localhost:5000/commits:latest
-    env_file:
-      - ./secrets/commits.env
-    expose:
-      - "80:80"
-    depends_on:
-      - mongo
+    volumes:
+      - commits:/app:rw
 
   # Admin stuff
 
@@ -210,7 +207,7 @@ services:
     expose:
       - "3000:3000"
     environment:
-      GF_SERVER_DOMAIN: "grafana.toino.pt"
+      GF_SERVER_ROOT_URL: "https://grafana.toino.pt/"
       GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
       GF_AUTH_GENERIC_OAUTH_NAME: "Authentik"
       GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email"
@@ -316,14 +313,6 @@ services:
 
   # Other services
 
-  mongo:
-    image: mongo:latest
-    restart: unless-stopped
-    expose:
-      - "27017:27017"
-    volumes:
-      - ./data/mongo:/data/db
-
   postgres:
     image: postgres:alpine
     restart: unless-stopped
@@ -355,3 +344,4 @@ volumes:
   website:
   latex-previewer:
   xaufome:
+  commits:
