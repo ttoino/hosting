@@ -57,14 +57,6 @@ services:
       - grafana
       - cadvisor
       - node-exporter
-      # Media apps
-      - jellyfin
-      - radarr
-      - sonarr
-      - bazarr
-      - readarr
-      - prowlarr
-      - qbittorrent
 
   # Subdomains
 
@@ -244,72 +236,6 @@ services:
       - "9100:9100"
     volumes:
       - /:/host:ro,rslave
-
-  # Media apps
-
-  jellyfin:
-    image: linuxserver/jellyfin:latest
-    restart: unless-stopped
-    expose:
-      - "8096:8096"
-    volumes:
-      - ./data/jellyfin:/config
-      - ./data/media/media:/data
-
-  radarr:
-    image: linuxserver/radarr:latest
-    restart: unless-stopped
-    expose:
-      - "7878:7878"
-    volumes:
-      - ./data/radarr:/config
-      - ./data/media:/data
-
-  sonarr:
-    image: linuxserver/sonarr:latest
-    restart: unless-stopped
-    expose:
-      - "8989:8989"
-    volumes:
-      - ./data/sonarr:/config
-      - ./data/media:/data
-
-  bazarr:
-    image: linuxserver/bazarr:latest
-    restart: unless-stopped
-    expose:
-      - "6767:6767"
-    volumes:
-      - ./data/bazarr:/config
-      - ./data/media:/data
-
-  readarr:
-    image: linuxserver/readarr:develop
-    restart: unless-stopped
-    expose:
-      - "8787:8787"
-    volumes:
-      - ./data/readarr:/config
-      - ./data/media:/data
-
-  prowlarr:
-    image: linuxserver/prowlarr:latest
-    restart: unless-stopped
-    expose:
-      - "9696:9696"
-    volumes:
-      - ./data/prowlarr:/config
-
-  qbittorrent:
-    image: linuxserver/qbittorrent:latest
-    restart: unless-stopped
-    environment:
-      - WEBUI_PORT=8080
-    expose:
-      - "8080:8080"
-    volumes:
-      - ./data/qbittorrent:/config/qBittorrent
-      - ./data/media/torrents:/data/torrents
 
   # Other services
 
