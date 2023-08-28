@@ -243,6 +243,7 @@ services:
       - source: loki
         target: ./config.yaml
     networks:
+      default:
       vpcbr:
         ipv4_address: 10.5.0.2
   
