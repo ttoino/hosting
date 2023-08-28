@@ -242,6 +242,9 @@ services:
     configs:
       - source: loki
         target: ./config.yaml
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.2
   
   grafana:
     <<: *default-service
