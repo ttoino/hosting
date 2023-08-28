@@ -246,6 +246,16 @@ services:
       default:
       vpcbr:
         ipv4_address: 10.5.0.2
+
+  promtail:
+    <<: *default-service
+    image: grafana/promtail:latest
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    configs:
+      - source: promtail
+        target: ./config.yaml
   
   grafana:
     <<: *default-service
