@@ -1,16 +1,27 @@
 version: '3'
+
+x-default-service: &default-service
+  logging:
+    driver: loki
+    options:
+      loki-url: "http://loki:3100/loki/api/v1/push"
+
 services:
   registry:
+    <<: *default-service
     image: registry:2
     ports:
       - "5000:5000"
     volumes:
       - ./data/registry:/var/lib/registry
-      - ./registry.yaml:/etc/docker/registry/config.yml:ro
+    configs:
+      - source: registry
+        target: /etc/docker/registry/config.yml
     depends_on:
       - webhook
 
   webhook:
+    <<: *default-service
     image: thecatlady/webhook
     command: -debug -verbose -hooks /config/hooks.yml -hotreload -template
     env_file:
@@ -18,11 +29,14 @@ services:
     expose:
       - "9000:9000"
     volumes:
-      - ./hooks.yaml:/config/hooks.yml:ro
       - ./webhook.fifo:/webhook.fifo
       - ./webhook.sh:/webhook.sh
+    configs:
+      - source: webhook
+        target: /config/hooks.yml
 
   nginx:
+    <<: *default-service
     image: nginx:alpine
     ports:
       - "80:80"
@@ -30,7 +44,6 @@ services:
     expose:
       - "8080:8080"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./secrets/cert.crt:/etc/nginx/cert.crt:ro
       - ./secrets/cert.key:/etc/nginx/cert.key:ro
       - ./secrets/auth.htpasswd:/etc/nginx/auth.htpasswd:ro
@@ -39,6 +52,9 @@ services:
       - latex-previewer:/var/www/latex-previewer:ro
       - xaufome:/var/www/xaufome:ro
       - commits:/var/www/commits:ro
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
     depends_on:
       - registry
       - webhook
@@ -61,16 +77,19 @@ services:
   # Subdomains
 
   website:
+    <<: *default-service
     image: localhost:5000/website:latest
     volumes:
       - website:/app:rw
 
   latex-previewer:
+    <<: *default-service
     image: localhost:5000/latex-previewer:latest
     volumes:
       - latex-previewer:/app:rw
 
   xaufome:
+    <<: *default-service
     image: localhost:5000/xaufome:latest
     volumes:
       - xaufome:/var/www/html
@@ -79,6 +98,7 @@ services:
       - "9000:9000"
 
   atrellado:
+    <<: *default-service
     image: localhost:5000/atrellado:latest
     environment:
       DB_CONNECTION: pgsql
@@ -99,6 +119,7 @@ services:
       - smtp
 
   commits:
+    <<: *default-service
     image: localhost:5000/commits:latest
     volumes:
       - commits:/app:rw
@@ -106,6 +127,7 @@ services:
   # Admin stuff
 
   authentik-server:
+    <<: *default-service
     image: ghcr.io/goauthentik/server:latest
     command: server
     env_file:
@@ -127,6 +149,7 @@ services:
       - redis
 
   authentik-worker:
+    <<: *default-service
     image: ghcr.io/goauthentik/server:latest
     command: worker
     env_file:
@@ -145,6 +168,7 @@ services:
       - redis
 
   authentik-ldap:
+    <<: *default-service
     image: ghcr.io/goauthentik/ldap:latest
     env_file:
       - ./secrets/authentik-ldap.env
@@ -157,6 +181,7 @@ services:
       - "9300:9300"
   
   pgadmin:
+    <<: *default-service
     image: dpage/pgadmin4:latest
     restart: unless-stopped
     env_file:
@@ -187,15 +212,32 @@ services:
       - postgres
 
   prometheus:
+    <<: *default-service
     image: prom/prometheus:latest
     restart: unless-stopped
     expose:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./data/prometheus:/prometheus
+    configs:
+      - source: prometheus
+        target: /etc/prometheus/prometheus.yml
+  
+  loki:
+    <<: *default-service
+    image: grafana/loki:latest
+    restart: unless-stopped
+    command: echo $USER
+    expose:
+      - "3100:3100"
+    volumes:
+      - ./data/loki:/loki
+    configs:
+      - source: loki
+        target: ./config.yaml
   
   grafana:
+    <<: *default-service
     image: grafana/grafana:latest
     restart: unless-stopped
     expose:
@@ -217,6 +259,7 @@ services:
       - ./data/grafana:/var/lib/grafana
   
   cadvisor:
+    <<: *default-service
     image: gcr.io/cadvisor/cadvisor:latest
     restart: unless-stopped
     expose:
@@ -229,6 +272,7 @@ services:
       - /dev/disk:/dev/disk:ro
   
   node-exporter:
+    <<: *default-service
     image: prom/node-exporter:latest
     restart: unless-stopped
     pid: host
@@ -242,6 +286,7 @@ services:
   # Other services
 
   postgres:
+    <<: *default-service
     image: postgres:alpine
     restart: unless-stopped
     env_file:
@@ -252,9 +297,12 @@ services:
       - "5432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-      - ./init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh:ro
+    configs:
+      - source: postgres
+        target: /docker-entrypoint-initdb.d/init-postgres.sh
 
   redis:
+    <<: *default-service
     image: redis:alpine
     restart: unless-stopped
     expose:
@@ -263,6 +311,7 @@ services:
       - ./data/redis:/data
 
   smtp:
+    <<: *default-service
     image: namshi/smtp:latest
     restart: unless-stopped
     expose:
@@ -273,3 +322,19 @@ volumes:
   latex-previewer:
   xaufome:
   commits:
+
+configs:
+  loki:
+    file: ./loki.yaml
+  nginx:
+    file: ./nginx.conf
+  postgres:
+    file: ./init-postgres.sh
+  prometheus:
+    file: ./prometheus.yml
+  promtail:
+    file: ./promtail.yaml
+  registry:
+    file: ./registry.yaml
+  webhook:
+    file: ./hooks.yaml
