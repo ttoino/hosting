@@ -13,6 +13,8 @@ x-default-service: &default-service
     driver: loki
     options:
       loki-url: http://10.5.0.2:3100/loki/api/v1/push
+  depends_on:
+    - loki
 
 services:
   registry:
@@ -27,6 +29,7 @@ services:
         target: /etc/docker/registry/config.yml
     depends_on:
       - webhook
+      - loki
 
   webhook:
     <<: *default-service
@@ -81,6 +84,7 @@ services:
       - grafana
       - cadvisor
       - node-exporter
+      - loki
 
   # Subdomains
 
@@ -125,6 +129,7 @@ services:
     depends_on:
       - postgres
       - smtp
+      - loki
 
   commits:
     <<: *default-service
@@ -155,6 +160,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - loki
 
   authentik-worker:
     <<: *default-service
@@ -174,6 +180,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - loki
 
   authentik-ldap:
     <<: *default-service
@@ -218,6 +225,7 @@ services:
       - ./data/pgadmin:/var/lib/pgadmin
     depends_on:
       - postgres
+      - loki
 
   prometheus:
     <<: *default-service
@@ -246,6 +254,7 @@ services:
       default:
       vpcbr:
         ipv4_address: 10.5.0.2
+    depends_on: []
 
   promtail:
     <<: *default-service
