@@ -13,6 +13,10 @@ x-default-service: &default-service
     driver: loki
     options:
       loki-url: http://10.5.0.2:3100/loki/api/v1/push
+      loki-retries: 2
+      loki-max-backoff: 800ms
+      loki-timeout: 1s
+      keep-file: 'true'
   depends_on:
     - loki
 
