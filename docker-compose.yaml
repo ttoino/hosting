@@ -321,7 +321,7 @@ services:
 
   postgres:
     <<: *default-service
-    image: postgres:alpine
+    image: postgres:15-alpine
     restart: unless-stopped
     env_file:
       - ./secrets/postgres.env
