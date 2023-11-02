@@ -104,6 +104,12 @@ services:
     volumes:
       - latex-previewer:/app:rw
 
+  schema:
+    <<: *default-service
+    image: localhost:5000/schema:latest
+    volumes:
+      - schema:/app:rw
+
   xaufome:
     <<: *default-service
     image: localhost:5000/xaufome:latest
@@ -354,6 +360,7 @@ services:
 volumes:
   website:
   latex-previewer:
+  schema:
   xaufome:
   commits:
 
