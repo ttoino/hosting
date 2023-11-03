@@ -65,6 +65,7 @@ services:
       - ./logs/nginx:/var/log/nginx
       - website:/var/www/website:ro
       - latex-previewer:/var/www/latex-previewer:ro
+      - schema:/var/www/schema:ro
       - xaufome:/var/www/xaufome:ro
       - commits:/var/www/commits:ro
     configs:
