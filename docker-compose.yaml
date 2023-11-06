@@ -77,6 +77,7 @@ services:
       # Subdomains
       - website
       - latex-previewer
+      - schema
       - xaufome
       - atrellado
       - commits
