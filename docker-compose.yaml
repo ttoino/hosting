@@ -81,6 +81,7 @@ services:
       - xaufome
       - atrellado
       - commits
+      - luis
       # Admin stuff
       - authentik-server
       - authentik-worker
@@ -148,6 +149,15 @@ services:
     image: localhost:5000/commits:latest
     volumes:
       - commits:/app:rw
+
+  luis:
+    <<: *default-service
+    image: localhost:5000/luis:latest
+    environment:
+      SOLR_URL: http://solr:8983/solr
+      SOLR_CORE: luis
+    depends_on:
+      - solr
 
   # Admin stuff
 
@@ -358,6 +368,12 @@ services:
     restart: unless-stopped
     expose:
       - "25:25"
+
+  solr:
+    <<: *default-service
+    image: localhost:5000/solr:latest
+    expose:
+      - "8983:8983"
 
 volumes:
   website:
