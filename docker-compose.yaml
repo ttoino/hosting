@@ -82,6 +82,7 @@ services:
       - atrellado
       - commits
       - luis
+      - sdle
       # Admin stuff
       - authentik-server
       - authentik-worker
@@ -158,6 +159,10 @@ services:
       SOLR_CORE: luis
     depends_on:
       - solr
+
+  sdle:
+    <<: *default-service
+    image: localhost:5000/sdle:latest
 
   # Admin stuff
 
