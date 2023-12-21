@@ -17,3 +17,7 @@ scrape_configs:
   - job_name: 'authentik-ldap'
     static_configs:
       - targets: ['authentik-ldap:9300']
+  - job_name: 'solr'
+    static_configs:
+      - targets: ['solr:8983']
+        metrics_path: '/solr/admin/metrics'
