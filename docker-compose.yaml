@@ -68,6 +68,7 @@ services:
       - schema:/var/www/schema:ro
       - xaufome:/var/www/xaufome:ro
       - commits:/var/www/commits:ro
+      - sgi:/var/www/sgi:ro
     configs:
       - source: nginx
         target: /etc/nginx/nginx.conf
@@ -83,6 +84,7 @@ services:
       - commits
       - luis
       - sdle
+      - sgi
       # Admin stuff
       - authentik-server
       - authentik-worker
@@ -163,6 +165,12 @@ services:
   sdle:
     <<: *default-service
     image: localhost:5000/sdle:latest
+
+  sgi:
+    <<: *default-service
+    image: localhost:5000/sgi:latest
+    volumes:
+      - sgi:/app:rw
 
   # Admin stuff
 
@@ -386,6 +394,7 @@ volumes:
   schema:
   xaufome:
   commits:
+  sgi:
 
 configs:
   loki:
