@@ -173,7 +173,7 @@ services:
     environment:
       CLUSTER_STORAGE_DRIVER_TYPE: file_system
     volumes:
-      - ./data/sdle-server:./data:rw
+      - ./data/sdle-server:/app/data:rw
 
   sgi:
     <<: *default-service
