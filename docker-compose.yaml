@@ -166,6 +166,8 @@ services:
   sdle:
     <<: *default-service
     image: localhost:5000/sdle:latest
+    expose:
+      - "3000:3000"
   
   sdle-server:
     <<: *default-service
@@ -174,6 +176,8 @@ services:
       CLUSTER_STORAGE_DRIVER_TYPE: file_system
     volumes:
       - ./data/sdle-server:/app/data:rw
+    expose:
+      - "8080:8080"
 
   sgi:
     <<: *default-service
