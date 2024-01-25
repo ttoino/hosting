@@ -84,6 +84,7 @@ services:
       - commits
       - luis
       - sdle
+      - sdle-server
       - sgi
       # Admin stuff
       - authentik-server
@@ -165,6 +166,14 @@ services:
   sdle:
     <<: *default-service
     image: localhost:5000/sdle:latest
+  
+  sdle-server:
+    <<: *default-service
+    image: localhost:5000/sdle-server:latest
+    environment:
+      CLUSTER_STORAGE_DRIVER_TYPE: file_system
+    volumes:
+      - ./data/sdle-server:./data:rw
 
   sgi:
     <<: *default-service
