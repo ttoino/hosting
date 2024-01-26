@@ -307,6 +307,7 @@ services:
   promtail:
     <<: *default-service
     image: grafana/promtail:latest
+    command: -config.file=config.yaml
     restart: unless-stopped
     volumes:
       - ./logs:/logs:ro
