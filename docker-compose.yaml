@@ -86,6 +86,7 @@ services:
       - sdle
       - sdle-server
       - sgi
+      - ementas
       # Admin stuff
       - authentik-server
       - authentik-worker
@@ -184,6 +185,14 @@ services:
     image: localhost:5000/sgi:latest
     volumes:
       - sgi:/app:rw
+
+  ementas:
+    <<: *default-service
+    image: localhost:5000/ementas:latest
+    environment:
+      DATABASE_URL: mongodb://mongo:27017/ementas?directConnection=true&retryWrites=true&w=majority&replicaSet=rs0
+    expose:
+      - "3000:3000"
 
   # Admin stuff
 
@@ -399,8 +408,27 @@ services:
   solr:
     <<: *default-service
     image: localhost:5000/solr:latest
+    restart: unless-stopped
     expose:
       - "8983:8983"
+  
+  mongo:
+    <<: *default-service
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ementas
+    expose:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }" | mongosh --port 27017 --quiet
+      interval: 1d
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
 
 volumes:
   website:
