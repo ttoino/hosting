@@ -426,7 +426,7 @@ services:
       - ./data/mongo:/data/db
     healthcheck:
       test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }" | mongosh --port 27017 --quiet
-      interval: 24h
+      interval: 10s
       timeout: 30s
       start_period: 0s
       start_interval: 1s
