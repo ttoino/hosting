@@ -417,6 +417,7 @@ services:
   mongo:
     <<: *default-service
     image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     restart: unless-stopped
     environment:
       MONGO_INITDB_DATABASE: ementas
