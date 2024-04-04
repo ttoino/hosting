@@ -193,6 +193,8 @@ services:
       DATABASE_URL: mongodb://mongo:27017/ementas?directConnection=true&retryWrites=true&w=majority&replicaSet=rs0
     expose:
       - "3000:3000"
+    depends_on:
+      - mongo
 
   # Admin stuff
 
