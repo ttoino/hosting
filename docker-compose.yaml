@@ -87,6 +87,7 @@ services:
       - sdle-server
       - sgi
       - ementas
+      - jmm
       # Admin stuff
       - authentik-server
       - authentik-worker
@@ -195,6 +196,12 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
+
+  jmm:
+    <<: *default-service
+    image: localhost:5000/jmm:latest
+    expose:
+      - "3000:3000"
 
   # Admin stuff
 
