@@ -86,7 +86,7 @@ services:
       - sdle
       - sdle-server
       - sgi
-      - ementas
+      # - ementas
       - jmm
       # Admin stuff
       - authentik-server
