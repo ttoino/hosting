@@ -187,15 +187,15 @@ services:
     volumes:
       - sgi:/app:rw
 
-  ementas:
-    <<: *default-service
-    image: localhost:5000/ementas:latest
-    environment:
-      DATABASE_URL: mongodb://mongo:27017/ementas?directConnection=true&retryWrites=true&w=majority&replicaSet=rs0
-    expose:
-      - "3000:3000"
-    depends_on:
-      - mongo
+  # ementas:
+  #   <<: *default-service
+  #   image: localhost:5000/ementas:latest
+  #   environment:
+  #     DATABASE_URL: mongodb://mongo:27017/ementas?directConnection=true&retryWrites=true&w=majority&replicaSet=rs0
+  #   expose:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - mongo
 
   jmm:
     <<: *default-service
