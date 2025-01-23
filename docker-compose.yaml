@@ -421,24 +421,24 @@ services:
     expose:
       - "8983:8983"
   
-  mongo:
-    <<: *default-service
-    image: mongo:7
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_DATABASE: ementas
-    expose:
-      - "27017:27017"
-    volumes:
-      - ./data/mongo:/data/db
-    healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }" | mongosh --port 27017 --quiet
-      interval: 10s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
+  # mongo:
+  #   <<: *default-service
+  #   image: mongo:7
+  #   command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_DATABASE: ementas
+  #   expose:
+  #     - "27017:27017"
+  #   volumes:
+  #     - ./data/mongo:/data/db
+  #   healthcheck:
+  #     test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }" | mongosh --port 27017 --quiet
+  #     interval: 10s
+  #     timeout: 30s
+  #     start_period: 0s
+  #     start_interval: 1s
+  #     retries: 30
 
 volumes:
   website:
