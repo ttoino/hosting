@@ -1,18 +1,11 @@
-version: '3'
-
-networks:
-  vpcbr:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.5.0.0/16
-          gateway: 10.5.0.1
-
-x-default-service: &default-service
+x-base-service: &base-service
+  restart: unless-stopped
+  labels:
+    com.centurylink.watchtower.scope: hosting
   logging:
     driver: loki
     options:
-      loki-url: http://10.5.0.2:3100/loki/api/v1/push
+      loki-url: http://10.69.0.2:3100/loki/api/v1/push
       loki-retries: 2
       loki-max-backoff: 800ms
       loki-timeout: 1s
@@ -22,47 +15,39 @@ x-default-service: &default-service
 
 services:
   registry:
-    <<: *default-service
-    image: registry:2
-    ports:
+    <<: *base-service
+    image: registry:3
+    environment:
+      REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: inmemory
+    expose:
       - "5000:5000"
     volumes:
       - ./data/registry:/var/lib/registry
-    configs:
-      - source: registry
-        target: /etc/docker/registry/config.yml
-    depends_on:
-      - webhook
-      - loki
+    networks:
+      default:
+      internal:
+        ipv4_address: 10.69.0.3
 
-  webhook:
-    <<: *default-service
-    image: thecatlady/webhook
-    command: -debug -verbose -hooks /config/hooks.yml -hotreload -template
-    env_file:
-      - ./secrets/webhook.env
-    expose:
-      - "9000:9000"
+  watchtower:
+    <<: *base-service
+    image: containrrr/watchtower:latest
+    environment:
+      WATCHTOWER_SCOPE: "hosting"
     volumes:
-      - ./webhook.fifo:/webhook.fifo
-      - ./webhook.sh:/webhook.sh
-    configs:
-      - source: webhook
-        target: /config/hooks.yml
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  nginx:
-    <<: *default-service
-    image: nginx:alpine
+  caddy:
+    <<: *base-service
+    image: caddy:2-alpine
     ports:
       - "80:80"
       - "443:443"
     expose:
-      - "8080:8080"
+      - "2019:2019"
     volumes:
-      - ./secrets/cert.crt:/etc/nginx/cert.crt:ro
-      - ./secrets/cert.key:/etc/nginx/cert.key:ro
-      - ./secrets/auth.htpasswd:/etc/nginx/auth.htpasswd:ro
-      - ./logs/nginx:/var/log/nginx
+      - ./data/caddy-data:/data
+      - ./data/caddy-config:/config
+      - ./secrets/registry-auth:/etc/caddy/registry-auth:ro
       - website:/var/www/website:ro
       - latex-previewer:/var/www/latex-previewer:ro
       - schema:/var/www/schema:ro
@@ -70,58 +55,32 @@ services:
       - commits:/var/www/commits:ro
       - sgi:/var/www/sgi:ro
     configs:
-      - source: nginx
-        target: /etc/nginx/nginx.conf
-    depends_on:
-      - registry
-      - webhook
-      # Subdomains
-      - website
-      - latex-previewer
-      - schema
-      - xaufome
-      - atrellado
-      - commits
-      - luis
-      - sdle
-      - sdle-server
-      - sgi
-      # - ementas
-      - jmm
-      # Admin stuff
-      - authentik-server
-      - authentik-worker
-      - authentik-ldap
-      - pgadmin
-      - prometheus
-      - grafana
-      - cadvisor
-      - node-exporter
-      - loki
+      - source: caddy
+        target: /etc/caddy/Caddyfile
 
   # Subdomains
 
   website:
-    <<: *default-service
-    image: localhost:5000/website:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/website
     volumes:
       - website:/app:rw
 
   latex-previewer:
-    <<: *default-service
-    image: localhost:5000/latex-previewer:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/latex-previewer
     volumes:
       - latex-previewer:/app:rw
 
   schema:
-    <<: *default-service
-    image: localhost:5000/schema:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/schema
     volumes:
       - schema:/app:rw
 
   xaufome:
-    <<: *default-service
-    image: localhost:5000/xaufome:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/xaufome
     volumes:
       - xaufome:/var/www/html
       - ./data/xaufome.db:/var/www/html/database/main.db
@@ -129,8 +88,8 @@ services:
       - "9000:9000"
 
   atrellado:
-    <<: *default-service
-    image: localhost:5000/atrellado:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/atrellado
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: postgres
@@ -151,14 +110,14 @@ services:
       - loki
 
   commits:
-    <<: *default-service
-    image: localhost:5000/commits:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/commits
     volumes:
       - commits:/app:rw
 
   luis:
-    <<: *default-service
-    image: localhost:5000/luis:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/luis
     environment:
       SOLR_URL: http://solr:8983/solr
       SOLR_CORE: luis
@@ -166,14 +125,14 @@ services:
       - solr
 
   sdle:
-    <<: *default-service
-    image: localhost:5000/sdle:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/sdle
     expose:
       - "3000:3000"
   
   sdle-server:
-    <<: *default-service
-    image: localhost:5000/sdle-server:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/sdle-server
     environment:
       CLUSTER_STORAGE_DRIVER_TYPE: file_system
     volumes:
@@ -182,31 +141,21 @@ services:
       - "8080:8080"
 
   sgi:
-    <<: *default-service
-    image: localhost:5000/sgi:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/sgi
     volumes:
       - sgi:/app:rw
 
-  # ementas:
-  #   <<: *default-service
-  #   image: localhost:5000/ementas:latest
-  #   environment:
-  #     DATABASE_URL: mongodb://mongo:27017/ementas?directConnection=true&retryWrites=true&w=majority&replicaSet=rs0
-  #   expose:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - mongo
-
   jmm:
-    <<: *default-service
-    image: localhost:5000/jmm:latest
+    <<: *base-service
+    image: 10.69.0.3:5000/jmm
     expose:
       - "3000:3000"
 
   # Admin stuff
 
   authentik-server:
-    <<: *default-service
+    <<: *base-service
     image: ghcr.io/goauthentik/server:latest
     command: server
     env_file:
@@ -229,7 +178,7 @@ services:
       - loki
 
   authentik-worker:
-    <<: *default-service
+    <<: *base-service
     image: ghcr.io/goauthentik/server:latest
     command: worker
     env_file:
@@ -249,7 +198,7 @@ services:
       - loki
 
   authentik-ldap:
-    <<: *default-service
+    <<: *base-service
     image: ghcr.io/goauthentik/ldap:latest
     env_file:
       - ./secrets/authentik-ldap.env
@@ -262,7 +211,7 @@ services:
       - "9300:9300"
   
   pgadmin:
-    <<: *default-service
+    <<: *base-service
     image: dpage/pgadmin4:latest
     restart: unless-stopped
     env_file:
@@ -294,7 +243,7 @@ services:
       - loki
 
   prometheus:
-    <<: *default-service
+    <<: *base-service
     image: prom/prometheus:latest
     restart: unless-stopped
     expose:
@@ -306,7 +255,7 @@ services:
         target: /etc/prometheus/prometheus.yml
   
   loki:
-    <<: *default-service
+    <<: *base-service
     image: grafana/loki:latest
     restart: unless-stopped
     expose:
@@ -318,12 +267,12 @@ services:
         target: ./config.yaml
     networks:
       default:
-      vpcbr:
-        ipv4_address: 10.5.0.2
+      internal:
+        ipv4_address: 10.69.0.2
     depends_on: []
 
   promtail:
-    <<: *default-service
+    <<: *base-service
     image: grafana/promtail:latest
     command: -config.file=config.yaml
     restart: unless-stopped
@@ -334,7 +283,7 @@ services:
         target: ./config.yaml
   
   grafana:
-    <<: *default-service
+    <<: *base-service
     image: grafana/grafana:latest
     restart: unless-stopped
     expose:
@@ -356,7 +305,7 @@ services:
       - ./data/grafana:/var/lib/grafana
   
   cadvisor:
-    <<: *default-service
+    <<: *base-service
     image: gcr.io/cadvisor/cadvisor:latest
     restart: unless-stopped
     expose:
@@ -369,7 +318,7 @@ services:
       - /dev/disk:/dev/disk:ro
   
   node-exporter:
-    <<: *default-service
+    <<: *base-service
     image: prom/node-exporter:latest
     restart: unless-stopped
     pid: host
@@ -383,7 +332,7 @@ services:
   # Other services
 
   postgres:
-    <<: *default-service
+    <<: *base-service
     image: postgres:15-alpine
     restart: unless-stopped
     env_file:
@@ -399,8 +348,8 @@ services:
         target: /docker-entrypoint-initdb.d/init-postgres.sh
 
   redis:
-    <<: *default-service
-    image: redis:alpine
+    <<: *base-service
+    image: redis:7-alpine
     restart: unless-stopped
     expose:
       - "6379:6379"
@@ -408,37 +357,18 @@ services:
       - ./data/redis:/data
 
   smtp:
-    <<: *default-service
+    <<: *base-service
     image: namshi/smtp:latest
     restart: unless-stopped
     expose:
       - "25:25"
 
   solr:
-    <<: *default-service
-    image: localhost:5000/solr:latest
+    <<: *base-service
+    image: /solr
     restart: unless-stopped
     expose:
       - "8983:8983"
-  
-  # mongo:
-  #   <<: *default-service
-  #   image: mongo:7
-  #   command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-  #   restart: unless-stopped
-  #   environment:
-  #     MONGO_INITDB_DATABASE: ementas
-  #   expose:
-  #     - "27017:27017"
-  #   volumes:
-  #     - ./data/mongo:/data/db
-  #   healthcheck:
-  #     test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }" | mongosh --port 27017 --quiet
-  #     interval: 10s
-  #     timeout: 30s
-  #     start_period: 0s
-  #     start_interval: 1s
-  #     retries: 30
 
 volumes:
   website:
@@ -450,16 +380,20 @@ volumes:
 
 configs:
   loki:
-    file: ./loki.yaml
-  nginx:
-    file: ./nginx.conf
+    file: ./config/loki.yaml
+  caddy:
+    file: ./config/Caddyfile
   postgres:
-    file: ./init-postgres.sh
+    file: ./config/init-postgres.sh
   prometheus:
-    file: ./prometheus.yml
+    file: ./config/prometheus.yml
   promtail:
-    file: ./promtail.yaml
-  registry:
-    file: ./registry.yaml
-  webhook:
-    file: ./hooks.yaml
+    file: ./config/promtail.yaml
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.69.0.0/16
+          gateway: 10.69.0.1

@@ -1,0 +1,100 @@
+{
+    email me@toino.pt
+    servers {
+        metrics
+    }
+}
+
+(files) {
+	root * /var/www/{args[0]}
+	file_server
+}
+
+(php) {
+	root * /var/www/{args[0]}
+	php_fastcgi {args[0]}:{args[1]}
+}
+
+(proxy) {
+	reverse_proxy * {args[0]}:{args[1]}
+}
+
+(error) {
+	handle_errors {
+		rewrite * {args[0]}
+	}
+}
+
+.toino.pt {
+	import files website
+	import error /error.html
+}
+
+latex.toino.pt {
+	import files latex-previewer
+}
+
+schema.toino.pt {
+	import files schema
+}
+
+xaufome.toino.pt {
+	import php xaufome 9000
+	import error /error.php
+}
+
+atrellado.toino.pt {
+	import proxy atrellado 80
+}
+
+commits.toino.pt {
+	import files commits
+	import error /error.html
+}
+
+luis.toino.pt {
+	import proxy luis 3000
+}
+
+sdle.toino.pt {
+	import proxy sdle 3000
+
+	handle_path /_api {
+		import proxy sdle-server 8080
+	}
+}
+
+sgi.toino.pt {
+	import files sgi
+}
+
+ementas.toino.pt {
+	import proxy ementas 3000
+}
+
+jmm.toino.pt {
+	import proxy jmm 3000
+}
+
+webhook.toino.pt {
+	import proxy webhook 9000
+}
+
+sso.toino.pt {
+	import proxy authentik-server 9443
+}
+
+pga.toino.pt {
+	import proxy pgadmin 80
+}
+
+grafana.toino.pt {
+	import proxy grafana 3000
+}
+
+registry.toino.pt {
+	basicauth {
+		import registry-auth
+	}
+	import proxy registry 5000
+}
