@@ -365,7 +365,7 @@ services:
 
   solr:
     <<: *base-service
-    image: /solr
+    image: 10.69.0.3:5000/solr
     restart: unless-stopped
     expose:
       - "8983:8983"
