@@ -1,8 +1,6 @@
 {
     email me@toino.pt
-    servers {
-        metrics
-    }
+	metrics
 }
 
 (files) {
@@ -25,7 +23,7 @@
 	}
 }
 
-.toino.pt {
+toino.pt {
 	import files website
 	import error /error.html
 }
@@ -93,7 +91,7 @@ grafana.toino.pt {
 }
 
 registry.toino.pt {
-	basicauth {
+	basic_auth {
 		import registry-auth
 	}
 	import proxy registry 5000
