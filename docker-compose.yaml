@@ -2,16 +2,16 @@ x-base-service: &base-service
   restart: unless-stopped
   labels:
     com.centurylink.watchtower.scope: hosting
-  logging:
-    driver: loki
-    options:
-      loki-url: http://10.69.0.2:3100/loki/api/v1/push
-      loki-retries: 2
-      loki-max-backoff: 800ms
-      loki-timeout: 1s
-      keep-file: 'true'
-  depends_on:
-    - loki
+  # logging:
+  #   driver: loki
+  #   options:
+  #     loki-url: http://10.69.0.2:3100/loki/api/v1/push
+  #     loki-retries: 2
+  #     loki-max-backoff: 800ms
+  #     loki-timeout: 1s
+  #     keep-file: 'true'
+  # depends_on:
+  #   - loki
 
 services:
   registry:
@@ -39,6 +39,8 @@ services:
   caddy:
     <<: *base-service
     image: caddy:2-alpine
+    cap_add:
+      - NET_ADMIN
     ports:
       - "80:80"
       - "443:443"
@@ -48,12 +50,7 @@ services:
       - ./data/caddy-data:/data
       - ./data/caddy-config:/config
       - ./secrets/registry-auth:/etc/caddy/registry-auth:ro
-      - website:/var/www/website:ro
-      - latex-previewer:/var/www/latex-previewer:ro
-      - schema:/var/www/schema:ro
       - xaufome:/var/www/xaufome:ro
-      - commits:/var/www/commits:ro
-      - sgi:/var/www/sgi:ro
     configs:
       - source: caddy
         target: /etc/caddy/Caddyfile
@@ -63,20 +60,14 @@ services:
   website:
     <<: *base-service
     image: 10.69.0.3:5000/website
-    volumes:
-      - website:/app:rw
-
-  latex-previewer:
-    <<: *base-service
-    image: 10.69.0.3:5000/latex-previewer
-    volumes:
-      - latex-previewer:/app:rw
+    expose:
+      - "80:80"
 
   schema:
     <<: *base-service
     image: 10.69.0.3:5000/schema
-    volumes:
-      - schema:/app:rw
+    expose:
+      - "80:80"
 
   xaufome:
     <<: *base-service
@@ -112,8 +103,8 @@ services:
   commits:
     <<: *base-service
     image: 10.69.0.3:5000/commits
-    volumes:
-      - commits:/app:rw
+    expose:
+      - "80:80"
 
   luis:
     <<: *base-service
@@ -143,8 +134,8 @@ services:
   sgi:
     <<: *base-service
     image: 10.69.0.3:5000/sgi
-    volumes:
-      - sgi:/app:rw
+    expose:
+      - "80:80"
 
   jmm:
     <<: *base-service
@@ -371,12 +362,7 @@ services:
       - "8983:8983"
 
 volumes:
-  website:
-  latex-previewer:
-  schema:
   xaufome:
-  commits:
-  sgi:
 
 configs:
   loki:
