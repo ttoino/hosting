@@ -2,16 +2,16 @@ x-base-service: &base-service
   restart: unless-stopped
   labels:
     com.centurylink.watchtower.scope: hosting
-  # logging:
-  #   driver: loki
-  #   options:
-  #     loki-url: http://10.69.0.2:3100/loki/api/v1/push
-  #     loki-retries: 2
-  #     loki-max-backoff: 800ms
-  #     loki-timeout: 1s
-  #     keep-file: 'true'
-  # depends_on:
-  #   - loki
+  logging:
+    driver: loki
+    options:
+      loki-url: http://10.69.0.2:3100/loki/api/v1/push
+      loki-retries: 2
+      loki-max-backoff: 800ms
+      loki-timeout: 1s
+      keep-file: 'true'
+  depends_on:
+    - loki
 
 services:
   registry:
@@ -31,6 +31,7 @@ services:
   watchtower:
     <<: *base-service
     image: containrrr/watchtower:latest
+    command: ["--interval", "300"]
     environment:
       WATCHTOWER_SCOPE: "hosting"
     volumes:
@@ -140,6 +141,12 @@ services:
   jmm:
     <<: *base-service
     image: 10.69.0.3:5000/jmm
+    expose:
+      - "3000:3000"
+
+  dotme:
+    <<: *base-service
+    image: 10.69.0.3:5000/dotme
     expose:
       - "3000:3000"
 

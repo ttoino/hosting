@@ -47,8 +47,8 @@ jmm.toino.pt {
 	reverse_proxy * jmm:3000
 }
 
-webhook.toino.pt {
-	reverse_proxy * webhook:9000
+dotme.toino.pt {
+	reverse_proxy * dotme:3000
 }
 
 sso.toino.pt {
