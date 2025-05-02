@@ -1,7 +1,7 @@
 x-base-service: &base-service
   restart: unless-stopped
   labels:
-    com.centurylink.watchtower.scope: hosting
+    com.centurylinklabs.watchtower.scope: hosting
   logging:
     driver: loki
     options:
@@ -149,6 +149,8 @@ services:
     image: 10.69.0.3:5000/dotme
     expose:
       - "3000:3000"
+    env_file:
+      - ./secrets/dotme.env
 
   # Admin stuff
 
