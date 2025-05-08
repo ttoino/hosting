@@ -47,10 +47,6 @@ jmm.toino.pt {
 	reverse_proxy * jmm:3000
 }
 
-dotme.toino.pt {
-	reverse_proxy * dotme:3000
-}
-
 sso.toino.pt {
 	reverse_proxy * authentik-server:9443
 }

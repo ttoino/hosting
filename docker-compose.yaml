@@ -144,22 +144,6 @@ services:
     expose:
       - "3000:3000"
 
-  dotme:
-    <<: *base-service
-    image: 10.69.0.3:5000/dotme
-    expose:
-      - "3000:3000"
-    environment:
-      - CV_GENERATOR_URL=http://dotme-cv-gen:5050
-    env_file:
-      - ./secrets/dotme.env
-
-  dotme-cv-gen:
-    <<: *base-service
-    image: 10.69.0.3:5000/dotme-cv-gen
-    expose:
-      - "5050:5050"
-
   # Admin stuff
 
   authentik-server:
