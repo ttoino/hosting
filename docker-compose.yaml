@@ -144,6 +144,18 @@ services:
     expose:
       - "3000:3000"
 
+  svelte-m3c:
+    <<: *base-service
+    image: 10.69.0.3:5000/svelte-m3c
+    expose:
+      - "80:80"
+
+  meterial:
+    <<: *base-service
+    image: 10.69.0.3:5000/meterial
+    expose:
+      - "80:80"
+
   # Admin stuff
 
   authentik-server:

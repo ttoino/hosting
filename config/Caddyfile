@@ -47,6 +47,14 @@ jmm.toino.pt {
 	reverse_proxy * jmm:3000
 }
 
+svelte-m3c.toino.pt {
+	reverse_proxy * svelte-m3c
+}
+
+meterial.toino.pt {
+	reverse_proxy * meterial
+}
+
 sso.toino.pt {
 	reverse_proxy * authentik-server:9000
 }
