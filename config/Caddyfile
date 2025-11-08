@@ -51,7 +51,7 @@ svelte-m3c.toino.pt {
 	reverse_proxy * svelte-m3c
 }
 
-next.svelte-m3c.toino.pt {
+svelte-m3c-next.toino.pt {
 	reverse_proxy * svelte-m3c-next
 }
 
