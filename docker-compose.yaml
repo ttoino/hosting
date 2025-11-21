@@ -51,7 +51,6 @@ services:
       - ./data/caddy-data:/data
       - ./data/caddy-config:/config
       - ./secrets/registry-auth:/etc/caddy/registry-auth:ro
-      - xaufome:/var/www/xaufome:ro
     configs:
       - source: caddy
         target: /etc/caddy/Caddyfile
@@ -74,10 +73,9 @@ services:
     <<: *base-service
     image: 10.69.0.3:5000/xaufome
     volumes:
-      - xaufome:/var/www/html
-      - ./data/xaufome.db:/var/www/html/database/main.db
+      - ./data/xaufome.db:/app/database/main.db
     expose:
-      - "9000:9000"
+      - "80:80"
 
   atrellado:
     <<: *base-service
@@ -379,9 +377,6 @@ services:
     restart: unless-stopped
     expose:
       - "8983:8983"
-
-volumes:
-  xaufome:
 
 configs:
   loki:

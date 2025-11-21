@@ -1,5 +1,5 @@
 {
-    email me@toino.pt
+	email me@toino.pt
 	metrics
 }
 
@@ -12,11 +12,7 @@ schema.toino.pt {
 }
 
 xaufome.toino.pt {
-	root * /var/www/xaufome
-	php_fastcgi xaufome:9000
-	handle_errors {
-		rewrite * /index.php
-	}
+	reverse_proxy * xaufome
 }
 
 atrellado.toino.pt {
