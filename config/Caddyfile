@@ -30,7 +30,7 @@ luis.toino.pt {
 sdle.toino.pt {
 	reverse_proxy * sdle:3000
 
-	handle_path /_api {
+	handle_path /_api/* {
 		reverse_proxy * sdle-server:8080
 	}
 }
