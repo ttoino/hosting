@@ -9,6 +9,7 @@ x-base-service: &base-service
       loki-retries: 2
       loki-max-backoff: 800ms
       loki-timeout: 1s
+      max-size: "1g"
       keep-file: 'true'
   depends_on:
     - loki
